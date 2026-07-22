@@ -129,6 +129,34 @@ app.post("/cart/:id", async(req,res) => {
         res.status(500).json({err:"Unable to update Cart"})
     }
 })
+
+app.put("/cart/:id", async(req,res) => {
+    try{
+        const {action} = req.body;
+        const id = req.params.id;
+
+        const cartItem = await Cart.findById(id)
+
+        if(!cartItem){
+            return res.status(404).json({message: "Cart item doesn't exists"});
+        }
+
+        if(action === "increment"){
+            cartItem.quantity += 1;
+        }else if(action === "decrement"){
+            cartItem.quantity -= 1;
+        }else{
+            return res.status(404).json({message:"Invalid action request "})
+        }
+
+        await cartItem.save();
+
+        res.status(200).json({message:"Cart Item update successfully!", cartItem})
+
+    }catch(err){
+        res.status(500).json({err:"Unable to update Cart Item!"})
+    }
+})
 app.listen(port,() => {
     console.log("Server is connected Successfully!", port )
 })
