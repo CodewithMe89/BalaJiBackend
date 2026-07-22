@@ -1,5 +1,6 @@
 const connectDB = require("./DB/DatabaseConnection")
 const dotenv = require('dotenv')
+const cors = require('cors')
 
 dotenv.config()
 connectDB()
@@ -11,8 +12,13 @@ const app = express();
 const port = 3000;
 
 //middlewares
-app.use(express.json());
+app.use(express.json({
+    origin: "*",
+    credentials: true,
+    optionSuccessStatus: true
+}));
 
+app.use(cors())
 //save data in database 
 app.post("/product",async (req, res) => {
     try{
