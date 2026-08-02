@@ -12,13 +12,14 @@ const app = express();
 const port = 3000;
 
 //middlewares
-app.use(express.json({
+app.use(express.json());
+
+app.use(cors({
     origin: "*",
     credentials: true,
     optionSuccessStatus: true
-}));
+}))
 
-app.use(cors())
 //save data in database 
 app.post("/product",async (req, res) => {
     try{
@@ -81,13 +82,30 @@ app.post("/product/:id", async(req,res) => {
 //cart data save 
 app.post("/cart", async(req,res) => {
     try{
-        const {productDetails,selectedSize,quantity} = req.body
-        if(!productDetails || !selectedSize || !quantity){
-            res.status(404).json({message:"Invalid data request"})
-        }
-        const newCartItem = await new Cart(req.body).save()
+        const {productDetails,selectedSize,quantity} = req.body;
 
-        res.status(200).json({message:"Item is added Successfully!", newCartItem})
+        if(!productDetails || !selectedSize || !quantity){
+            return res.status(404).json({error:"Invalid data request"})
+        }
+        
+        const existingCartItem = await Cart.findOne({
+            productDetails: productDetails,
+            selectedSize: selectedSize
+        });
+
+        if(existingCartItem){
+            existingCartItem.quantity += 1;
+            await existingCartItem.save();
+            return res.status(200).json({message: "Item quantity updated successfully!", existingCartItem});
+        }
+
+        const newCartItem = await new Cart({
+            productDetails,
+            selectedSize,
+            quantity: 1
+        }).save()
+
+        res.status(201).json({message:"Item is added Successfully!", newCartItem})
     }
     catch(err){
         res.status(500).json({err:"Unable to save data in cart"})
