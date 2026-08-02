@@ -113,13 +113,18 @@ app.post("/cart", async(req,res) => {
 })
 
 //fetch cart data
-app.get('/cart/:id',async(req,res)=> {
-const id = req.params.id;
-const cartItem = await Cart.findById(id);
+app.get('/cart',async(req,res)=> {
+    try{
+const cartItem = await Cart.find().populate('productDetails');
 if(!cartItem){
     return res.status(404).json({message:"Cart item not found"})
 }
+
 res.status(200).json({message:"Cart item fetched Successfully !", cartItem})
+    }
+catch(err){
+     res.status(500).json({err:"Unable to fetch cart Item "})
+}
 })
 
 //delete cart item 
